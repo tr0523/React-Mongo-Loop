@@ -1,3 +1,8 @@
+const models = require('../models');
+
+const {Song} = models;
+
+
 const appPage = (req, res) => {
   res.render('app');
 };
@@ -23,7 +28,10 @@ const addSong = async (req, res) => {
   }
 
   try {
-    return res.status(501).json({ error: 'Not built yet' });
+    const newSong = new Song({artist:req.body.artist,title:req.title});
+    await newSong.save();
+    return res.status(201).json({artist:newSong.artist, title:newSong.title});
+
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: 'Error saving song!' });

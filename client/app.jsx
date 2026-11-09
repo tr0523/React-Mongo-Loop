@@ -2,7 +2,7 @@ const React = require('react');
 const { useState, useEffect } = React;
 const { createRoot } = require('react-dom/client');
 
-const handleSong = async (e) => {
+const handleSong = async (e,onSongAdded) => {
   e.preventDefault();
 
   const artist = e.target.querySelector('#songArtist').value;
@@ -10,12 +10,18 @@ const handleSong = async (e) => {
 
   console.log('Form submitted:', artist, title);
 
+  await fetch('addSong',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.Stringify({artist,title}),
+  })
+
   return false;
 };
 
 const SongForm = (props) => {
   return (
-    <form id="songForm" onSubmit={(e) => handleSong(e)}>
+    <form id="songForm" onSubmit={(e) => handleSong(e,props.triggerReload)}>
       <label htmlFor="songArtist">Artist: </label>
       <input id="songArtist" type="text" name="artist" placeholder="Artist" />
       <label htmlFor="songTitle">Title: </label>
@@ -27,7 +33,6 @@ const SongForm = (props) => {
 
 const SongList = (props) => {
   const [songs, setSongs] = useState(props.songs);
-  const [reload, setReload] = useState(false);
 
   useEffect(() => {
     const loadSongsFromServer = async () => {
@@ -58,17 +63,18 @@ const SongList = (props) => {
   return (
     <div>
       <h1>My favorite songs!</h1>
-      <button onClick={() => setReload(!reload)}>Reload songs</button>
       {songNodes}
     </div>
   );
 };
 
 const App = () => {
+  const [reload, setReload] = useState(false);
+
   return (
     <div>
-      <SongForm />
-      <SongList songs={[]} />
+      <SongForm triggerReload={()=>setReload(!reload)}/>
+      <SongList songs={[]} reload={reload}/>
     </div>
   );
 };
